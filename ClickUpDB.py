@@ -132,6 +132,34 @@ def transform_and_enrich_data(tasks):
         
     return pd.DataFrame(records)
 
+# --- DRILLDOWN MODAL DEFINITIONS ---
+COLS_TO_SHOW = ["Task ID", "Initiative / Task", "Owner", "Category Status", "Priority", "Due Date", "Segment"]
+
+@dt.dialog("⚠️ Resource Allocation Drilldown")
+def show_resource_drilldown(df, owner):
+    dt.write(f"Showing all active tasks currently assigned to **{owner}**:")
+    active_user_tasks = df[(df['Owner'] == owner) & (df['Category Status'] == 'ONGOING')][COLS_TO_SHOW]
+    dt.dataframe(active_user_tasks, hide_index=True, use_container_width=True)
+
+@dt.dialog("🚨 Slippage Exception Drilldown")
+def show_slippage_drilldown(df):
+    dt.write("Showing all pending tasks with past due dates:")
+    today_val = datetime.now().date()
+    overdue_df = df[(df['Category Status'] != 'COMPLETED') & (df['Due Date'] < today_val) & (df['Due Date'].notnull())][COLS_TO_SHOW]
+    dt.dataframe(overdue_df.sort_values(by="Due Date"), hide_index=True, use_container_width=True)
+
+@dt.dialog("📋 Pipeline Velocity & Backlog Drilldown")
+def show_backlog_drilldown(df):
+    dt.write("Showing all unstarted backlog tasks:")
+    backlog_df = df[df['Category Status'] == 'NOT STARTED'][COLS_TO_SHOW]
+    dt.dataframe(backlog_df, hide_index=True, use_container_width=True)
+
+@dt.dialog("🔥 Critical Path Pressure Drilldown")
+def show_critical_drilldown(df):
+    dt.write("Showing active Urgent tasks in production:")
+    urgent_df = df[(df['Priority'].str.contains("Urgent")) & (df['Category Status'] == 'ONGOING')][COLS_TO_SHOW]
+    dt.dataframe(urgent_df, hide_index=True, use_container_width=True)
+
 # --- RUN BI PIPELINE ---
 raw_data = fetch_all_clickup_tasks(LIST_ID)
 master_df = transform_and_enrich_data(raw_data)
@@ -212,7 +240,7 @@ else:
 
     dt.markdown("---")
 
-    # --- AUTOMATED KEY INSIGHTS ENGINE ---
+    # --- AUTOMATED KEY INSIGHTS ENGINE (WITH MODAL POPUPS) ---
     dt.subheader("💡 Automated Executive Insights & Exceptions")
     
     if not f_df.empty:
@@ -226,6 +254,8 @@ else:
                 top_owner_count = active_only['Owner'].value_counts().max()
                 if top_owner != "Unassigned" and top_owner_count >= 3:
                     dt.warning(f"⚠️ **Resource Allocation Crunch:** **{top_owner}** is currently managing the highest volume of in-flight work with **{top_owner_count} active tasks**.")
+                    if dt.button(f"🔍 Drilldown: View {top_owner}'s Tasks", key="btn_resource_crunch", help="Click for more info on active tasks"):
+                        show_resource_drilldown(f_df, top_owner)
                 else:
                     dt.success("AI Insight: Active tasks are distributed evenly across the immediate delivery team.")
             
@@ -234,13 +264,17 @@ else:
                 dt.info(f"📋 **Pipeline Concentration:** Over 40% of your project scope ({unstarted_volume} tasks) is sitting in 'Not Started'.")
             else:
                 dt.info(f"📋 **Pipeline Velocity:** Backlog is under control, representing healthy future queue metrics.")
+            if dt.button("🔍 Drilldown: View Backlog Pipeline", key="btn_backlog", help="Click for more info on unstarted backlog items"):
+                show_backlog_drilldown(f_df)
 
         with ins_col2:
-            # 3. Overdue Check
+            # 3. Overdue Check (Slippage Exception)
             today_date = datetime.now().date()
             overdue_tasks = f_df[(f_df['Category Status'] != 'COMPLETED') & (f_df['Due Date'] < today_date) & (f_df['Due Date'].notnull())]
             if not overdue_tasks.empty:
                 dt.error(f"🚨 **Slippage Exception:** Found **{len(overdue_tasks)} pending tasks** with past due dates. Immediate milestone alignment required.")
+                if dt.button(f"🔍 Drilldown: View {len(overdue_tasks)} Overdue Tasks", key="btn_slippage", help="Click for more info on delayed tasks"):
+                    show_slippage_drilldown(f_df)
             else:
                 dt.success("🎯 **Timeline Discipline:** Zero pending items are overdue within this filtered dataset.")
 
@@ -248,6 +282,10 @@ else:
             urgent_active = f_df[(f_df['Priority'].str.contains("Urgent")) & (f_df['Category Status'] == 'ONGOING')]
             if not urgent_active.empty:
                 dt.error(f"🔥 **Critical Path Pressure:** There are **{len(urgent_active)} URGENT tasks actively running** in production.")
+                if dt.button(f"🔍 Drilldown: View {len(urgent_active)} Critical Tasks", key="btn_critical", help="Click for more info on critical path tasks"):
+                    show_critical_drilldown(f_df)
+            else:
+                dt.info("No urgent tasks currently flagged in production.")
     else:
         dt.info("Adjust filters to generate automated system insights.")
 
