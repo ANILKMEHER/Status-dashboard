@@ -103,18 +103,37 @@ dt.markdown("""
     }
     .kpi-red-5 .kpi-val { color: #B91C1C; }
 
-    /* 3D Elevated Insight Containers */
+    /* Standardised Fixed-Height Symmetrical Card Containers */
     .insight-wrapper {
-        border-radius: 10px;
-        padding: 16px 18px 8px 18px;
-        margin-bottom: 12px;
+        border-radius: 12px;
+        padding: 16px 18px 10px 18px;
+        margin-bottom: 0px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        min-height: 110px;
+        height: 125px;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
         border: 1px solid rgba(0, 0, 0, 0.05);
+        box-sizing: border-box;
     }
+    .insight-text {
+        font-size: 13px;
+        line-height: 1.45;
+        overflow: hidden;
+    }
+    .insight-footer-slot {
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+    .no-details-badge {
+        font-size: 11px;
+        font-weight: 600;
+        color: #64748B;
+        opacity: 0.75;
+    }
+
     .insight-crunch {
         background: linear-gradient(145deg, #FEF3C7, #FDE68A);
         border-left: 5px solid #F59E0B;
@@ -141,7 +160,14 @@ dt.markdown("""
         color: #065F46;
     }
 
-    /* Embedded Bottom-Right Action Link */
+    /* Embedded Bottom-Right Action Link with Zero Vertical Drift */
+    div[data-testid*="btn_"] {
+        margin-top: -30px !important;
+        margin-bottom: 14px !important;
+        display: flex !important;
+        justify-content: flex-end !important;
+        padding-right: 18px !important;
+    }
     div[data-testid*="btn_"] button {
         background: transparent !important;
         border: none !important;
@@ -152,8 +178,6 @@ dt.markdown("""
         cursor: pointer !important;
         box-shadow: none !important;
         padding: 0px 4px !important;
-        float: right !important;
-        margin-top: -24px !important;
         transition: color 0.15s ease !important;
     }
     div[data-testid*="btn_"] button:hover {
@@ -423,72 +447,59 @@ else:
 
     dt.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
 
-    # --- AUTOMATED KEY INSIGHTS WITH INLINE BOTTOM-RIGHT HYPERLINKS ---
+    # --- AUTOMATED KEY INSIGHTS (PERFECT VERTICAL ALIGNMENT & SYMMETRY) ---
     dt.subheader("💡 Automated Executive Insights & Exceptions")
     
     if not f_df.empty:
-        ins_col1, ins_col2 = dt.columns(2)
+        # Row 1 of Insights: Card 1 (Resource Crunch) & Card 3 (Slippage Exception)
+        ins_r1_c1, ins_r1_c2 = dt.columns(2)
         
-        with ins_col1:
-            # 1. Resource Workload Bottleneck Insight
+        with ins_r1_c1:
             active_only = f_df[f_df['Category Status'] == 'ONGOING']
+            has_crunch = False
+            top_owner = "Unassigned"
+            top_owner_count = 0
+            
             if not active_only.empty:
                 top_owner = active_only['Owner'].value_counts().idxmax()
                 top_owner_count = active_only['Owner'].value_counts().max()
                 if top_owner != "Unassigned" and top_owner_count >= 3:
-                    dt.markdown(f"""
-                        <div class="insight-wrapper insight-crunch">
-                            <div>
-                                <b>⚠️ Resource Allocation Crunch:</b> <b>{top_owner}</b> is currently managing the highest volume of in-flight work with <b>{top_owner_count} active tasks</b>.
-                            </div>
-                            <div style="text-align: right; padding-top: 14px;">&nbsp;</div>
-                        </div>
-                    """, unsafe_allow_html=True)
-                    if dt.button("Click for details →", key="btn_res", help="Inspect in-flight tasks"):
-                        show_resource_drilldown(f_df, top_owner)
-                else:
-                    dt.markdown("""
-                        <div class="insight-wrapper insight-healthy">
-                            <div>
-                                <b>✅ Balanced Allocation:</b> Active tasks are distributed evenly across the immediate delivery team.
-                            </div>
-                            <div style="height: 18px;"></div>
-                        </div>
-                    """, unsafe_allow_html=True)
-            
-            # 2. Backlog Risk Assessment
-            if unstarted_volume > (total_volume * 0.40):
+                    has_crunch = True
+
+            if has_crunch:
                 dt.markdown(f"""
-                    <div class="insight-wrapper insight-velocity">
-                        <div>
-                            <b>📋 Pipeline Concentration:</b> Over 40% of your project scope (<b>{unstarted_volume} tasks</b>) is sitting in 'Not Started'.
+                    <div class="insight-wrapper insight-crunch">
+                        <div class="insight-text">
+                            <b>⚠️ Resource Allocation Crunch:</b> <b>{top_owner}</b> is currently managing the highest volume of in-flight work with <b>{top_owner_count} active tasks</b>.
                         </div>
-                        <div style="text-align: right; padding-top: 14px;">&nbsp;</div>
+                        <div class="insight-footer-slot"></div>
                     </div>
                 """, unsafe_allow_html=True)
+                if dt.button("Click for details →", key="btn_res", help="Inspect in-flight tasks"):
+                    show_resource_drilldown(f_df, top_owner)
             else:
                 dt.markdown("""
-                    <div class="insight-wrapper insight-velocity">
-                        <div>
-                            <b>📋 Pipeline Velocity:</b> Backlog is under control, representing healthy future queue metrics.
+                    <div class="insight-wrapper insight-healthy">
+                        <div class="insight-text">
+                            <b>✅ Balanced Allocation:</b> Active tasks are distributed evenly across the immediate delivery team.
                         </div>
-                        <div style="text-align: right; padding-top: 14px;">&nbsp;</div>
+                        <div class="insight-footer-slot">
+                            <span class="no-details-badge">No Details to View</span>
+                        </div>
                     </div>
                 """, unsafe_allow_html=True)
-            if dt.button("Click for details →", key="btn_pipe", help="Inspect backlog items"):
-                show_backlog_drilldown(f_df)
 
-        with ins_col2:
-            # 3. Adjusted Slippage Exception Logic: Strictly Ongoing in-flight tasks past due (Excludes Hold and Not Started)
+        with ins_r1_c2:
             today_date = datetime.now().date()
             overdue_tasks = f_df[(f_df['Category Status'] == 'ONGOING') & (f_df['Due Date'] < today_date) & (f_df['Due Date'].notnull())]
+            
             if not overdue_tasks.empty:
                 dt.markdown(f"""
                     <div class="insight-wrapper insight-slippage">
-                        <div>
+                        <div class="insight-text">
                             <b>🚨 Slippage Exception:</b> Found <b>{len(overdue_tasks)} active in-flight tasks</b> with past due dates. Immediate milestone alignment required.
                         </div>
-                        <div style="text-align: right; padding-top: 14px;">&nbsp;</div>
+                        <div class="insight-footer-slot"></div>
                     </div>
                 """, unsafe_allow_html=True)
                 if dt.button("Click for details →", key="btn_slip", help="Inspect overdue deliverables"):
@@ -496,22 +507,46 @@ else:
             else:
                 dt.markdown("""
                     <div class="insight-wrapper insight-healthy">
-                        <div>
+                        <div class="insight-text">
                             <b>🎯 Timeline Discipline:</b> Zero active ongoing items are overdue within this filtered dataset.
                         </div>
-                        <div style="height: 18px;"></div>
+                        <div class="insight-footer-slot">
+                            <span class="no-details-badge">No Details to View</span>
+                        </div>
                     </div>
                 """, unsafe_allow_html=True)
 
-            # 4. Critical Path Tracking
+        # Row 2 of Insights: Card 2 (Pipeline Velocity) & Card 4 (Critical Path)
+        ins_r2_c1, ins_r2_c2 = dt.columns(2)
+        
+        with ins_r2_c1:
+            has_backlog_items = unstarted_volume > 0
+            if unstarted_volume > (total_volume * 0.40):
+                card_msg = f"<b>📋 Pipeline Concentration:</b> Over 40% of your project scope (<b>{unstarted_volume} tasks</b>) is sitting in 'Not Started'."
+            else:
+                card_msg = "<b>📋 Pipeline Velocity:</b> Backlog is under control, representing healthy future queue metrics."
+
+            dt.markdown(f"""
+                <div class="insight-wrapper insight-velocity">
+                    <div class="insight-text">{card_msg}</div>
+                    <div class="insight-footer-slot">
+                        {"<span class='no-details-badge'>No Details to View</span>" if not has_backlog_items else ""}
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+            if has_backlog_items:
+                if dt.button("Click for details →", key="btn_pipe", help="Inspect backlog items"):
+                    show_backlog_drilldown(f_df)
+
+        with ins_r2_c2:
             urgent_active = f_df[(f_df['Priority'].str.contains("Urgent")) & (f_df['Category Status'] == 'ONGOING')]
             if not urgent_active.empty:
                 dt.markdown(f"""
                     <div class="insight-wrapper insight-critical">
-                        <div>
+                        <div class="insight-text">
                             <b>🔥 Critical Path Pressure:</b> There are <b>{len(urgent_active)} URGENT tasks actively running</b> in production.
                         </div>
-                        <div style="text-align: right; padding-top: 14px;">&nbsp;</div>
+                        <div class="insight-footer-slot"></div>
                     </div>
                 """, unsafe_allow_html=True)
                 if dt.button("Click for details →", key="btn_crit", help="Inspect urgent issues"):
@@ -519,15 +554,18 @@ else:
             else:
                 dt.markdown("""
                     <div class="insight-wrapper insight-velocity">
-                        <div>
+                        <div class="insight-text">
                             <b>✨ Critical Path Stability:</b> Zero urgent items currently in flight.
                         </div>
-                        <div style="height: 18px;"></div>
+                        <div class="insight-footer-slot">
+                            <span class="no-details-badge">No Details to View</span>
+                        </div>
                     </div>
                 """, unsafe_allow_html=True)
     else:
         dt.info("Adjust filters to generate automated system insights.")
 
+    dt.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
     dt.markdown("---")
 
     # --- ROW 1: ANALYTICAL CHARTS MIX ---
