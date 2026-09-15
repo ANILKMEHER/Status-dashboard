@@ -17,7 +17,7 @@ headers = {
 
 dt.set_page_config(layout="wide", page_title="Executive Delivery Insights", page_icon="📊")
 
-# --- REFINED LIGHT-FIRST 3D UI STYLING ---
+# --- CUSTOM CARD & 3D GRADIENT STYLING ---
 dt.markdown("""
     <style>
     .block-container {
@@ -25,31 +25,83 @@ dt.markdown("""
         padding-bottom: 2rem;
     }
 
-    /* 3D Elevated Metric Cards */
-    div[data-testid="stMetric"] {
-        background: linear-gradient(145deg, #FFFFFF, #F8FAFC);
-        border: 1px solid #E2E8F0;
+    /* 3D Elevated Metric Tile Cards */
+    .kpi-card {
         border-radius: 12px;
-        padding: 16px 20px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        padding: 18px 20px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        min-height: 118px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    div[data-testid="stMetric"]:hover {
+    .kpi-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
     }
-    div[data-testid="stMetricValue"] {
-        font-size: 32px !important; 
-        font-weight: 800 !important; 
-        color: #1E3A8A !important;
+    .kpi-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 4px;
     }
-    div[data-testid="stMetricLabel"] {
-        font-size: 12px !important; 
-        font-weight: 700 !important; 
-        color: #4B5563 !important; 
-        text-transform: uppercase !important;
-        letter-spacing: 0.05em;
+    .kpi-val {
+        font-size: 34px;
+        font-weight: 800;
+        line-height: 1.1;
     }
+    .kpi-badge {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 6px;
+        margin-top: 6px;
+        width: fit-content;
+    }
+
+    /* 5 Tile Color Gradients: Green Gradient (1 to 3), Yellow (4), Reddish (5) */
+    .kpi-green-1 {
+        background: linear-gradient(145deg, #F0FDF4, #DCFCE7);
+        border-left: 4px solid #86EFAC;
+    }
+    .kpi-green-1 .kpi-val { color: #166534; }
+
+    .kpi-green-2 {
+        background: linear-gradient(145deg, #DCFCE7, #BBF7D0);
+        border-left: 4px solid #4ADE80;
+    }
+    .kpi-green-2 .kpi-val { color: #15803D; }
+
+    .kpi-green-3 {
+        background: linear-gradient(145deg, #BBF7D0, #86EFAC);
+        border-left: 4px solid #22C55E;
+    }
+    .kpi-green-3 .kpi-val { color: #14532D; }
+    .kpi-green-3 .kpi-badge {
+        background: #DCFCE7;
+        color: #166534;
+        border: 1px solid #86EFAC;
+    }
+
+    .kpi-yellow-4 {
+        background: linear-gradient(145deg, #FFFBEB, #FEF3C7);
+        border-left: 4px solid #F59E0B;
+    }
+    .kpi-yellow-4 .kpi-val { color: #B45309; }
+    .kpi-yellow-4 .kpi-badge {
+        background: #F3F4F6;
+        color: #4B5563;
+        border: 1px solid #E5E7EB;
+    }
+
+    .kpi-red-5 {
+        background: linear-gradient(145deg, #FEF2F2, #FEE2E2);
+        border-left: 4px solid #EF4444;
+    }
+    .kpi-red-5 .kpi-val { color: #B91C1C; }
 
     /* 3D Elevated Insight Containers */
     .insight-wrapper {
@@ -109,60 +161,11 @@ dt.markdown("""
         background: transparent !important;
     }
 
-    /* DataFrame Borders */
+    /* DataFrame Table */
     .stDataFrame {
         border: 1px solid #E5E7EB; 
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
-    }
-
-    /* Dark Mode High-Contrast Overrides */
-    @media (prefers-color-scheme: dark) {
-        div[data-testid="stMetric"] {
-            background: linear-gradient(145deg, #1E293B, #0F172A);
-            border: 1px solid #334155;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
-        }
-        div[data-testid="stMetricValue"] {
-            color: #60A5FA !important;
-        }
-        div[data-testid="stMetricLabel"] {
-            color: #94A3B8 !important;
-        }
-        .insight-crunch {
-            background: linear-gradient(145deg, #451A03, #78350F);
-            color: #FDE68A;
-            border-left-color: #F59E0B;
-        }
-        .insight-slippage {
-            background: linear-gradient(145deg, #450A0A, #7F1D1D);
-            color: #FECACA;
-            border-left-color: #EF4444;
-        }
-        .insight-velocity {
-            background: linear-gradient(145deg, #172554, #1E3A8A);
-            color: #BFDBFE;
-            border-left-color: #3B82F6;
-        }
-        .insight-critical {
-            background: linear-gradient(145deg, #500724, #881337);
-            color: #FBCFE8;
-            border-left-color: #F43F5E;
-        }
-        .insight-healthy {
-            background: linear-gradient(145deg, #022C22, #064E3B);
-            color: #A7F3D0;
-            border-left-color: #10B981;
-        }
-        div[data-testid*="btn_"] button {
-            color: #93C5FD !important;
-        }
-        div[data-testid*="btn_"] button:hover {
-            color: #FFFFFF !important;
-        }
-        .stDataFrame {
-            border: 1px solid #334155;
-        }
     }
     </style>
     """, unsafe_allow_html=True)
@@ -283,9 +286,9 @@ def show_resource_drilldown(df, owner):
 
 @dt.dialog("🚨 Slippage Exception Details")
 def show_slippage_drilldown(df):
-    dt.markdown("**Overdue Tasks Requiring Milestone Alignment:**")
+    dt.markdown("**In-Flight Overdue Tasks Requiring Milestone Alignment (Excluding Hold & Backlog):**")
     today_val = datetime.now().date()
-    overdue_df = df[(df['Category Status'] != 'COMPLETED') & (df['Due Date'] < today_val) & (df['Due Date'].notnull())][COLS_TO_SHOW]
+    overdue_df = df[(df['Category Status'] == 'ONGOING') & (df['Due Date'] < today_val) & (df['Due Date'].notnull())][COLS_TO_SHOW]
     dt.dataframe(overdue_df.sort_values(by="Due Date"), hide_index=True, use_container_width=True)
 
 @dt.dialog("📋 Backlog Pipeline Details")
@@ -372,13 +375,53 @@ else:
         closure_rate_calc = 0
 
     kpi1, kpi2, kpi3, kpi4, kpi5 = dt.columns(5)
-    kpi1.metric("Total Scope Items", total_volume)
-    kpi2.metric("Active (Ongoing)", ongoing_volume)
-    kpi3.metric("Completed Scope", completed_volume, delta=f"{closure_rate_calc}% Adjusted Closure Rate")
-    kpi4.metric("On Hold Tasks", hold_volume, delta="Excluded From Analytics", delta_color="off")
-    kpi5.metric("Backlog Pipeline", unstarted_volume)
+    
+    with kpi1:
+        dt.markdown(f"""
+            <div class="kpi-card kpi-green-1">
+                <div class="kpi-label">Total Scope Items</div>
+                <div class="kpi-val">{total_volume}</div>
+                <div>&nbsp;</div>
+            </div>
+        """, unsafe_allow_html=True)
 
-    dt.markdown("---")
+    with kpi2:
+        dt.markdown(f"""
+            <div class="kpi-card kpi-green-2">
+                <div class="kpi-label">Active (Ongoing)</div>
+                <div class="kpi-val">{ongoing_volume}</div>
+                <div>&nbsp;</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with kpi3:
+        dt.markdown(f"""
+            <div class="kpi-card kpi-green-3">
+                <div class="kpi-label">Completed Scope</div>
+                <div class="kpi-val">{completed_volume}</div>
+                <div class="kpi-badge">↑ {closure_rate_calc}% Adjusted Closure Rate</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with kpi4:
+        dt.markdown(f"""
+            <div class="kpi-card kpi-yellow-4">
+                <div class="kpi-label">On Hold Tasks</div>
+                <div class="kpi-val">{hold_volume}</div>
+                <div class="kpi-badge">↑ Excluded From Analytics</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with kpi5:
+        dt.markdown(f"""
+            <div class="kpi-card kpi-red-5">
+                <div class="kpi-label">Backlog Pipeline</div>
+                <div class="kpi-val">{unstarted_volume}</div>
+                <div>&nbsp;</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+    dt.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
 
     # --- AUTOMATED KEY INSIGHTS WITH INLINE BOTTOM-RIGHT HYPERLINKS ---
     dt.subheader("💡 Automated Executive Insights & Exceptions")
@@ -436,14 +479,14 @@ else:
                 show_backlog_drilldown(f_df)
 
         with ins_col2:
-            # 3. Overdue Check
+            # 3. Adjusted Slippage Exception Logic: Strictly Ongoing in-flight tasks past due (Excludes Hold and Not Started)
             today_date = datetime.now().date()
-            overdue_tasks = f_df[(f_df['Category Status'] != 'COMPLETED') & (f_df['Due Date'] < today_date) & (f_df['Due Date'].notnull())]
+            overdue_tasks = f_df[(f_df['Category Status'] == 'ONGOING') & (f_df['Due Date'] < today_date) & (f_df['Due Date'].notnull())]
             if not overdue_tasks.empty:
                 dt.markdown(f"""
                     <div class="insight-wrapper insight-slippage">
                         <div>
-                            <b>🚨 Slippage Exception:</b> Found <b>{len(overdue_tasks)} pending tasks</b> with past due dates. Immediate milestone alignment required.
+                            <b>🚨 Slippage Exception:</b> Found <b>{len(overdue_tasks)} active in-flight tasks</b> with past due dates. Immediate milestone alignment required.
                         </div>
                         <div style="text-align: right; padding-top: 14px;">&nbsp;</div>
                     </div>
@@ -454,7 +497,7 @@ else:
                 dt.markdown("""
                     <div class="insight-wrapper insight-healthy">
                         <div>
-                            <b>🎯 Timeline Discipline:</b> Zero pending items are overdue within this filtered dataset.
+                            <b>🎯 Timeline Discipline:</b> Zero active ongoing items are overdue within this filtered dataset.
                         </div>
                         <div style="height: 18px;"></div>
                     </div>
@@ -495,7 +538,6 @@ else:
         status_chart_data = f_df['Category Status'].value_counts().reset_index()
         status_chart_data.columns = ['Status', 'Count']
         
-        # Original color profile
         status_colors = {'COMPLETED': '#10B981', 'HOLD': '#F59E0B', 'ONGOING': '#065F46', 'NOT STARTED': '#94A3B8'}
         fig_status = px.bar(status_chart_data, x='Status', y='Count', color='Status', color_discrete_map=status_colors)
         fig_status.update_layout(showlegend=False, height=300, margin=dict(l=10, r=10, t=10, b=10))
@@ -504,12 +546,10 @@ else:
     with col2:
         dt.subheader("🎯 Resource Productivity Breakdown + Trend")
         if not f_df.empty:
-            # Cross-tab allocation groups
             res_df = f_df.groupby(['Owner', 'Category Status']).size().unstack(fill_value=0).reset_index()
             total_per_owner = f_df.groupby('Owner').size().reset_index(name='Total Tasks')
             res_merged = pd.merge(res_df, total_per_owner, on='Owner')
             
-            # Composite Bar & Trend Line generation
             fig_res = go.Figure()
             for status_step, color_hex in [('COMPLETED', '#10B981'), ('HOLD', '#F59E0B'), ('ONGOING', '#065F46'), ('NOT STARTED', '#94A3B8')]:
                 if status_step in res_merged.columns:
@@ -525,7 +565,6 @@ else:
         priority_chart_data.columns = ['Priority', 'Count']
         priority_chart_data = priority_chart_data.sort_values('Priority')
         
-        # Original Priority custom color gradient
         prio_colors = {
             "1. Urgent 🔴": "#DC2626",
             "2. High 🟡": "#F59E0B",
@@ -570,7 +609,6 @@ else:
     end_week = start_week + timedelta(days=6)
     end_upcoming = end_week + timedelta(days=7)
     
-    # Bucket allocation filter layers
     weekly_matrix = f_df[(f_df['Due Date'] >= start_week) & (f_df['Due Date'] <= end_week)]
     upcoming_matrix = f_df[(f_df['Due Date'] > end_week) & (f_df['Due Date'] <= end_upcoming)]
     rest_matrix = f_df[(f_df['Due Date'] > end_upcoming) | (f_df['Due Date'].isnull())]
