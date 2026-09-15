@@ -103,35 +103,36 @@ dt.markdown("""
     }
     .kpi-red-5 .kpi-val { color: #B91C1C; }
 
-    /* Standardised Fixed-Height Symmetrical Card Containers */
+    /* Standardised Executive Insight Containers */
     .insight-wrapper {
         border-radius: 12px;
-        padding: 16px 18px 10px 18px;
-        margin-bottom: 0px;
+        padding: 20px 22px 14px 22px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        height: 125px;
+        min-height: 122px;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
         border: 1px solid rgba(0, 0, 0, 0.05);
         box-sizing: border-box;
+        margin-bottom: 12px;
     }
     .insight-text {
-        font-size: 13px;
-        line-height: 1.45;
-        overflow: hidden;
+        font-size: 15px;
+        line-height: 1.55;
+        font-weight: 500;
     }
     .insight-footer-slot {
-        height: 24px;
+        height: 28px;
         display: flex;
         align-items: center;
         justify-content: flex-end;
+        margin-top: 8px;
     }
     .no-details-badge {
-        font-size: 11px;
+        font-size: 13px;
         font-weight: 600;
         color: #64748B;
-        opacity: 0.75;
+        opacity: 0.85;
     }
 
     .insight-crunch {
@@ -160,19 +161,19 @@ dt.markdown("""
         color: #065F46;
     }
 
-    /* Embedded Bottom-Right Action Link with Zero Vertical Drift */
+    /* Embedded Bottom-Right Action Link Aligned with Footer Slot */
     div[data-testid*="btn_"] {
-        margin-top: -30px !important;
-        margin-bottom: 14px !important;
+        margin-top: -46px !important;
+        margin-bottom: 18px !important;
         display: flex !important;
         justify-content: flex-end !important;
-        padding-right: 18px !important;
+        padding-right: 22px !important;
     }
     div[data-testid*="btn_"] button {
         background: transparent !important;
         border: none !important;
         color: #1E3A8A !important;
-        font-size: 12px !important;
+        font-size: 13px !important;
         font-weight: 700 !important;
         text-decoration: underline !important;
         cursor: pointer !important;
@@ -447,7 +448,7 @@ else:
 
     dt.markdown("<div style='height: 20px;'></div>", unsafe_allow_html=True)
 
-    # --- AUTOMATED KEY INSIGHTS (PERFECT VERTICAL ALIGNMENT & SYMMETRY) ---
+    # --- AUTOMATED KEY INSIGHTS (SYMMETRICAL GRID & DYNAMIC FOOTERS) ---
     dt.subheader("💡 Automated Executive Insights & Exceptions")
     
     if not f_df.empty:
@@ -526,17 +527,24 @@ else:
             else:
                 card_msg = "<b>📋 Pipeline Velocity:</b> Backlog is under control, representing healthy future queue metrics."
 
-            dt.markdown(f"""
-                <div class="insight-wrapper insight-velocity">
-                    <div class="insight-text">{card_msg}</div>
-                    <div class="insight-footer-slot">
-                        {"<span class='no-details-badge'>No Details to View</span>" if not has_backlog_items else ""}
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
             if has_backlog_items:
+                dt.markdown(f"""
+                    <div class="insight-wrapper insight-velocity">
+                        <div class="insight-text">{card_msg}</div>
+                        <div class="insight-footer-slot"></div>
+                    </div>
+                """, unsafe_allow_html=True)
                 if dt.button("Click for details →", key="btn_pipe", help="Inspect backlog items"):
                     show_backlog_drilldown(f_df)
+            else:
+                dt.markdown(f"""
+                    <div class="insight-wrapper insight-velocity">
+                        <div class="insight-text">{card_msg}</div>
+                        <div class="insight-footer-slot">
+                            <span class="no-details-badge">No Details to View</span>
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
 
         with ins_r2_c2:
             urgent_active = f_df[(f_df['Priority'].str.contains("Urgent")) & (f_df['Category Status'] == 'ONGOING')]
